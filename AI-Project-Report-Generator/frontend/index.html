@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReportAI — AI Project Report Generator</title>
+<style>
+:root{
+  --primary:#2563eb;--primary-dark:#1d4ed8;--ink:#172033;--muted:#667085;
+  --bg:#f6f8fc;--card:#fff;--border:#e5e7eb;--success:#16a34a;--danger:#dc2626;
+  --shadow:0 8px 30px rgba(15,23,42,.07);--radius:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.navbar{height:70px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 5%;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;color:var(--primary)}
+.logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2563eb,#7c3aed);display:grid;place-items:center;color:white;font-weight:900}
+.navlinks{display:flex;gap:24px}
+.navlinks button{border:0;background:none;color:#475467;padding:10px 4px}
+.navlinks button.active{color:var(--primary);font-weight:700}
+.user{width:38px;height:38px;border-radius:50%;background:#e8eefc;display:grid;place-items:center;font-weight:700;color:var(--primary)}
+main{max-width:1280px;margin:auto;padding:34px 24px 60px}
+.view{display:none}.view.active{display:block}
+.hero{text-align:center;padding:42px 20px 34px}
+.hero h1{font-size:44px;line-height:1.12;margin:0 auto 14px;max-width:780px}
+.hero h1 span{color:var(--primary)}
+.hero p{max-width:720px;margin:0 auto;color:var(--muted);font-size:17px}
+.actions{display:flex;justify-content:center;gap:12px;margin-top:24px}
+.btn{border:0;border-radius:9px;padding:12px 18px;font-weight:700;transition:.2s}
+.btn.primary{background:var(--primary);color:#fff}.btn.primary:hover{background:var(--primary-dark)}
+.btn.secondary{background:#fff;border:1px solid var(--border);color:#344054}
+.btn.success{background:var(--success);color:white}
+.btn.danger{background:#fff;color:var(--danger);border:1px solid #fecaca}
+.section-title{text-align:center;margin:30px 0 20px}.section-title h2{margin:0 0 7px}.section-title p{margin:0;color:var(--muted)}
+.feature-grid,.stats-grid,.template-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+.feature{padding:24px}.icon{width:44px;height:44px;border-radius:11px;background:#eef4ff;color:var(--primary);display:grid;place-items:center;font-size:21px;margin-bottom:15px}
+.feature h3{margin:0 0 7px}.feature p{color:var(--muted);font-size:14px;line-height:1.6;margin:0}
+.stats-grid{grid-template-columns:repeat(4,1fr);margin-bottom:24px}
+.stat{padding:20px}.stat strong{display:block;font-size:27px}.stat span{color:var(--muted);font-size:13px}
+.page-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.page-head h1{margin:0}.page-head p{color:var(--muted);margin:5px 0 0}
+.form-layout{display:grid;grid-template-columns:1.25fr .75fr;gap:22px}
+.form-card{padding:26px}.form-card h2{margin-top:0}
+.field{margin-bottom:17px}.field label{display:block;font-weight:700;font-size:14px;margin-bottom:7px}
+input,select,textarea{width:100%;border:1px solid #d0d5dd;border-radius:9px;padding:11px 12px;outline:none;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:#7da4ff;box-shadow:0 0 0 3px #eaf1ff}
+textarea{min-height:110px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{border:1px solid var(--border);padding:11px;border-radius:9px;display:flex;gap:9px;align-items:center;font-size:14px}
+.check input{width:auto}
+.progress{height:8px;background:#edf0f5;border-radius:20px;overflow:hidden;margin:14px 0}.bar{height:100%;background:var(--primary);width:0;transition:.3s}
+.template{padding:18px}.template h3{margin:5px 0}.template p{font-size:13px;color:var(--muted);line-height:1.5}.template button{width:100%}
+.output{margin-top:22px;padding:28px;display:none}
+.output.show{display:block}
+.report-paper{background:white;border:1px solid var(--border);padding:42px;max-width:900px;margin:auto;line-height:1.7}
+.report-paper h1{text-align:center;font-size:30px;margin-top:0}.report-paper h2{color:#1f3b70;border-bottom:1px solid #dbe4f3;padding-bottom:5px;margin-top:30px}
+.meta{text-align:center;color:var(--muted);margin-bottom:25px}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.workspace{display:grid;grid-template-columns:260px 1fr;gap:20px}
+.side{padding:18px;height:max-content;position:sticky;top:90px}
+.side button{width:100%;border:0;background:none;text-align:left;padding:10px;border-radius:8px;color:#475467}.side button.active{background:#eef4ff;color:var(--primary);font-weight:700}
+.editor{padding:24px}.editor textarea{min-height:430px;font-family:inherit;line-height:1.6}
+.history-list{display:grid;gap:13px}.history-item{padding:18px;display:flex;justify-content:space-between;align-items:center}.history-item h3{margin:0 0 4px}.history-item p{margin:0;color:var(--muted);font-size:13px}
+.badge{background:#ecfdf3;color:#15803d;border-radius:20px;padding:5px 9px;font-size:12px;font-weight:700}
+.empty{text-align:center;color:var(--muted);padding:40px}
+.toast{position:fixed;right:24px;bottom:24px;background:#101828;color:white;padding:13px 18px;border-radius:9px;display:none;z-index:50}
+.toast.show{display:block}
+.footer{text-align:center;color:var(--muted);font-size:13px;padding:30px}
+@media(max-width:900px){.feature-grid,.stats-grid,.template-grid{grid-template-columns:1fr 1fr}.form-layout,.workspace{grid-template-columns:1fr}.side{position:static}.navlinks{gap:10px}.hero h1{font-size:34px}}
+@media(max-width:600px){.feature-grid,.stats-grid,.template-grid,.two,.checks{grid-template-columns:1fr}.navbar{padding:0 15px}.navlinks{display:none}main{padding:20px 14px}.report-paper{padding:24px}.hero{padding:25px 5px}}
+@media print{
+  .navbar,.no-print,.footer{display:none!important}
+  body{background:white}.report-paper{border:0;box-shadow:none;max-width:none}
+}
+</style>
+</head>
+<body>
+
+<header class="navbar">
+  <div class="brand"><div class="logo">R</div> ReportAI</div>
+  <nav class="navlinks">
+    <button class="active" onclick="showView('home',this)">Home</button>
+    <button onclick="showView('generate',this)">Generate</button>
+    <button onclick="showView('history',this)">History</button>
+    <button onclick="showView('workspace',this)">AI Workspace</button>
+  </nav>
+  <div class="user">A</div>
+</header>
+
+<main>
+<section id="home" class="view active">
+  <div class="hero">
+    <h1>Create <span>Professional Project Reports</span> with AI</h1>
+    <p>Generate structured academic project reports, abstracts, literature reviews, methodology, results and conclusions in minutes.</p>
+    <div class="actions">
+      <button class="btn primary" onclick="showView('generate')">Generate Report</button>
+      <button class="btn secondary" onclick="showView('history')">View History</button>
+    </div>
+  </div>
+
+  <div class="section-title"><h2>Everything You Need</h2><p>A complete AI-assisted project documentation workspace.</p></div>
+  <div class="feature-grid">
+    <div class="card feature"><div class="icon">✦</div><h3>AI Report Generation</h3><p>Generate a complete project report from your title, objectives, technology and project details.</p></div>
+    <div class="card feature"><div class="icon">⌁</div><h3>Smart Sections</h3><p>Create abstract, introduction, literature survey, methodology, results, conclusion and references.</p></div>
+    <div class="card feature"><div class="icon">✓</div><h3>Academic Structure</h3><p>Use a consistent academic structure suitable for college mini-projects and final-year projects.</p></div>
+    <div class="card feature"><div class="icon">▣</div><h3>Export & Manage</h3><p>Preview, edit, print and save generated reports. Previous reports remain available in history.</p></div>
+  </div>
+
+  <div class="section-title"><h2>Quick Templates</h2><p>Start with a project category.</p></div>
+  <div class="template-grid">
+    <div class="card template"><h3>💻 Software / IT</h3><p>Web apps, mobile apps, cloud systems and AI projects.</p><button class="btn secondary" onclick="useTemplate('software')">Use Template</button></div>
+    <div class="card template"><h3>⚡ Electronics / IoT</h3><p>Embedded systems, sensors, ESP32, Arduino and IoT projects.</p><button class="btn secondary" onclick="useTemplate('iot')">Use Template</button></div>
+    <div class="card template"><h3>🤖 AI / ML</h3><p>Machine learning, deep learning, NLP and computer vision.</p><button class="btn secondary" onclick="useTemplate('ai')">Use Template</button></div>
+    <div class="card template"><h3>📊 Research</h3><p>Research-oriented projects with analysis, methodology and findings.</p><button class="btn secondary" onclick="useTemplate('research')">Use Template</button></div>
+  </div>
+</section>
+
+<section id="generate" class="view">
+  <div class="page-head">
+    <div><h1>Generate Project Report</h1><p>Enter project details and let AI create the report structure.</p></div>
+    <button class="btn secondary" onclick="resetForm()">Reset</button>
+  </div>
+
+  <div class="form-layout">
+    <div class="card form-card">
+      <h2>Project Information</h2>
+      <div class="field"><label>Project Title *</label><input id="title" placeholder="e.g. AI-Powered Air Quality Monitoring System"></div>
+      <div class="two">
+        <div class="field"><label>Student Name</label><input id="student" placeholder="Your name"></div>
+        <div class="field"><label>College / University</label><input id="college" placeholder="College name"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label>Department</label><input id="department" placeholder="e.g. ENTC Engineering"></div>
+        <div class="field"><label>Academic Year</label><input id="year" value="2026–27"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label>Project Type</label>
+          <select id="type"><option>Final Year Project</option><option>Mini Project</option><option>Research Project</option><option>Internship Project</option></select>
+        </div>
+        <div class="field"><label>Technology Domain</label>
+          <select id="domain"><option>Artificial Intelligence</option><option>Web Development</option><option>IoT / Embedded Systems</option><option>Data Science</option><option>Cybersecurity</option><option>Other</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Project Description</label><textarea id="description" placeholder="Describe what your project does, the problem it solves, and how it works..."></textarea></div>
+      <div class="field"><label>Objectives</label><textarea id="objectives" placeholder="Enter project objectives, one per line..."></textarea></div>
+      <div class="field"><label>Technologies / Components</label><input id="tech" placeholder="e.g. Python, Flask, HTML, CSS, JavaScript, Gemini API"></div>
+      <div class="field"><label>Choose Sections to Generate</label>
+        <div class="checks">
+          <label class="check"><input type="checkbox" class="section" value="abstract" checked> Abstract</label>
+          <label class="check"><input type="checkbox" class="section" value="introduction" checked> Introduction</label>
+          <label class="check"><input type="checkbox" class="section" value="literature" checked> Literature Review</label>
+          <label class="check"><input type="checkbox" class="section" value="methodology" checked> Methodology</label>
+          <label class="check"><input type="checkbox" class="section" value="implementation" checked> Implementation</label>
+          <label class="check"><input type="checkbox" class="section" value="results" checked> Results</label>
+          <label class="check"><input type="checkbox" class="section" value="conclusion" checked> Conclusion</label>
+          <label class="check"><input type="checkbox" class="section" value="references" checked> References</label>
+        </div>
+      </div>
+      <button class="btn primary" style="width:100%;margin-top:8px" onclick="generateReport()">✨ Generate Report with AI</button>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <small id="status" style="color:var(--muted)"></small>
+    </div>
+
+    <div class="card form-card">
+      <h2>Report Settings</h2>
+      <div class="field"><label>Writing Style</label><select id="style"><option>Formal Academic</option><option>Simple Academic</option><option>Technical</option><option>Research Paper Style</option></select></div>
+      <div class="field"><label>Report Length</label><select id="length"><option>Short (5–8 pages)</option><option selected>Medium (10–15 pages)</option><option>Detailed (20+ pages)</option></select></div>
+      <div class="field"><label>Language</label><select id="language"><option>English</option><option>English — Simple</option></select></div>
+      <div class="field"><label>Reference Style</label><select id="reference"><option>IEEE</option><option>APA</option><option>MLA</option><option>Harvard</option></select></div>
+      <hr style="border:0;border-top:1px solid var(--border);margin:25px 0">
+      <h3>Recommended Report Structure</h3>
+      <ol style="color:var(--muted);line-height:2;font-size:14px">
+        <li>Title Page</li><li>Certificate & Declaration</li><li>Acknowledgement</li><li>Abstract</li><li>Table of Contents</li><li>Introduction</li><li>Literature Review</li><li>Methodology</li><li>Implementation</li><li>Results & Discussion</li><li>Conclusion & Future Scope</li><li>References</li>
+      </ol>
+    </div>
+  </div>
+
+  <div id="output" class="card output">
+    <div class="toolbar no-print">
+      <button class="btn primary" onclick="editReport()">✎ Edit in Workspace</button>
+      <button class="btn secondary" onclick="window.print()">🖨 Print / Save PDF</button>
+      <button class="btn secondary" onclick="copyReport()">Copy Text</button>
+    </div>
+    <div id="reportPaper" class="report-paper"></div>
+  </div>
+</section>
+
+<section id="history" class="view">
+  <div class="page-head"><div><h1>Report History</h1><p>Your generated reports are stored locally in this browser.</p></div><button class="btn danger" onclick="clearHistory()">Clear History</button></div>
+  <div id="historyList" class="history-list"></div>
+</section>
+
+<section id="workspace" class="view">
+  <div class="page-head"><div><h1>AI Workspace</h1><p>Edit your generated report section-by-section.</p></div><div><button class="btn success" onclick="saveWorkspace()">Save Changes</button></div></div>
+  <div class="workspace">
+    <div class="card side" id="sectionNav"></div>
+    <div class="card editor">
+      <div class="toolbar"><button class="btn secondary" onclick="improveText()">✨ Improve with AI</button><button class="btn secondary" onclick="summarizeText()">▤ Summarize</button><button class="btn secondary" onclick="copyWorkspace()">Copy</button></div>
+      <textarea id="editor"></textarea>
+      <small style="color:var(--muted)">Demo AI tools modify the current text locally. Connect your preferred AI API for real generation.</small>
+    </div>
+  </div>
+</section>
+</main>
+
+<div id="toast" class="toast"></div>
+<footer class="footer">ReportAI • AI Project Report Generator • Frontend prototype</footer>
+
+<script>
+let currentReport={};
+let currentSection='abstract';
+
+function showView(id,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.navlinks button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  if(id==='history') renderHistory();
+  if(id==='workspace') renderWorkspace();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200)}
+function val(id){return document.getElementById(id).value.trim()}
+function useTemplate(type){
+  const presets={
+    software:{title:'AI-Powered Project Management Web Application',domain:'Web Development',tech:'Python, Flask, HTML, CSS, JavaScript, SQLite',description:'A web-based application that uses artificial intelligence to simplify project management, documentation and productivity.'},
+    iot:{title:'IoT-Based Smart Air Quality Monitoring System',domain:'IoT / Embedded Systems',tech:'ESP32, MQ Sensors, DHT22, Python, Blynk, IoT',description:'An IoT system that measures environmental parameters and provides real-time air quality information through a connected dashboard.'},
+    ai:{title:'AI-Based Intelligent Student Assistance System',domain:'Artificial Intelligence',tech:'Python, Machine Learning, NLP, Flask, HTML, CSS, JavaScript',description:'An AI-powered platform designed to assist students with learning, question answering, summarization and academic content generation.'},
+    research:{title:'AI-Assisted Research Analysis System',domain:'Data Science',tech:'Python, NLP, Machine Learning, Pandas, Flask',description:'A research-oriented system for analyzing documents, extracting information and generating structured insights.'}
+  };
+  const p=presets[type]; document.getElementById('title').value=p.title; document.getElementById('domain').value=p.domain; document.getElementById('tech').value=p.tech; document.getElementById('description').value=p.description; document.getElementById('objectives').value='Automate a complex manual process\\nImprove accuracy and productivity\\nProvide an easy-to-use web interface\\nGenerate useful insights using AI';
+  showView('generate'); toast('Template loaded');
+}
+function resetForm(){document.querySelectorAll('#generate input,#generate textarea').forEach(e=>{if(e.id!=='year')e.value=''});document.getElementById('output').classList.remove('show');document.getElementById('bar').style.width='0';document.getElementById('status').textContent=''}
+function selectedSections(){return [...document.querySelectorAll('.section:checked')].map(x=>x.value)}
+function generateReport(){
+  if(!val('title')){toast('Please enter a project title');return}
+  const bar=document.getElementById('bar'),status=document.getElementById('status');
+  bar.style.width='10%';status.textContent='Analyzing project information...';
+  setTimeout(()=>{bar.style.width='45%';status.textContent='Creating academic sections...'},400);
+  setTimeout(()=>{bar.style.width='75%';status.textContent='Structuring final report...'},850);
+  setTimeout(()=>{bar.style.width='100%';status.textContent='Report generated successfully';buildReport();},1250);
+}
+function buildReport(){
+  const title=val('title'), student=val('student')||'Student Name', college=val('college')||'College / University', dept=val('department')||'Department', year=val('year')||'2026–27', domain=val('domain'), tech=val('tech')||'Relevant software, hardware and development technologies', desc=val('description')||'The proposed project addresses a practical problem using a structured technology-based solution.', objectives=val('objectives')||'Improve efficiency\\nReduce manual effort\\nProvide reliable results\\nCreate an accessible solution';
+  const objList=objectives.split('\\n').filter(Boolean).map(x=>'<li>'+escapeHtml(x)+'</li>').join('');
+  currentReport={title,student,college,dept,year,domain,tech,desc,objectives};
+  const sections=selectedSections();
+  let html=`<h1>${escapeHtml(title)}</h1><div class="meta">${escapeHtml(student)} · ${escapeHtml(dept)} · ${escapeHtml(college)} · ${escapeHtml(year)}</div>`;
+  html+=`<h2>Project Information</h2><p><strong>Domain:</strong> ${escapeHtml(domain)}<br><strong>Technologies:</strong> ${escapeHtml(tech)}</p>`;
+  const content={
+    abstract:`This project, <strong>${escapeHtml(title)}</strong>, presents a technology-driven solution in the domain of ${escapeHtml(domain)}. ${escapeHtml(desc)} The system is designed with a focus on usability, reliability, efficiency and practical implementation. The proposed approach combines ${escapeHtml(tech)} to develop an integrated solution. The project demonstrates how modern computing technologies can be applied to solve real-world problems and improve existing workflows.`,
+    introduction:`The rapid development of digital technologies has created opportunities to solve practical problems through intelligent and automated systems. ${escapeHtml(desc)} This project focuses on developing a structured solution that is accessible, scalable and easy to use. The proposed system is divided into clearly defined modules covering input, processing, application logic, output and user interaction.`,
+    literature:`Existing solutions in the ${escapeHtml(domain)} domain provide useful approaches for addressing similar problems. Traditional systems often require manual processing, separate tools or significant user effort. Recent AI-enabled and web-based approaches improve automation, accessibility and data handling. The present project builds on these concepts while emphasizing a simple interface, modular architecture and practical deployment.`,
+    methodology:`The methodology begins with problem identification and requirement analysis, followed by system design, technology selection, implementation and testing. The system is divided into input, processing, AI/application logic, database or storage, and presentation layers. Project objectives are mapped to individual features so that each requirement can be evaluated during testing.`,
+    implementation:`The implementation uses ${escapeHtml(tech)}. The user interface collects project information and provides controls for report generation and editing. Application logic processes the input and creates structured academic content. Data can be stored for later access, while the workspace allows individual sections to be modified. The architecture can be extended with a real AI API, authentication and cloud database.`,
+    results:`The developed prototype demonstrates the complete report-generation workflow from project information to a structured report. The system reduces repetitive documentation effort and provides consistent formatting. Testing should include functional testing, input validation, UI testing, report-content review and export testing. Actual project-specific experimental values, screenshots, tables and graphs should be inserted in this section before final submission.`,
+    conclusion:`The project successfully demonstrates an AI-assisted approach to academic project documentation. It provides a structured workflow for generating and editing major report sections while reducing manual effort. Future enhancements can include direct integration with an AI model, PDF/DOCX export, plagiarism checking, citation management, user authentication, cloud storage, collaborative editing and institution-specific report templates.`,
+    references:`[1] Official documentation of the technologies and frameworks used in the project.<br>[2] Relevant research papers and conference publications related to ${escapeHtml(domain)}.<br>[3] Technical documentation, standards and online resources consulted during implementation.<br><br><em>Replace these placeholders with the exact sources actually used in your project.</em>`
+  };
+  const headings={abstract:'Abstract',introduction:'1. Introduction',literature:'2. Literature Review',methodology:'3. Methodology',implementation:'4. Implementation',results:'5. Results and Discussion',conclusion:'6. Conclusion and Future Scope',references:'7. References'};
+  sections.forEach(s=>{html+=`<h2>${headings[s]}</h2>${s==='introduction'?'<p><strong>Objectives:</strong></p><ul>'+objList+'</ul>':''}<p>${content[s]}</p>`});
+  document.getElementById('reportPaper').innerHTML=html;
+  document.getElementById('output').classList.add('show');
+  saveToHistory();
+  window.scrollTo({top:document.getElementById('output').offsetTop-80,behavior:'smooth'});
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function saveToHistory(){
+  const items=JSON.parse(localStorage.getItem('reportai_history')||'[]');
+  items.unshift({id:Date.now(),title:currentReport.title,domain:currentReport.domain,date:new Date().toLocaleString(),html:document.getElementById('reportPaper').innerHTML});
+  localStorage.setItem('reportai_history',JSON.stringify(items.slice(0,20)));
+}
+function renderHistory(){
+  const list=document.getElementById('historyList'),items=JSON.parse(localStorage.getItem('reportai_history')||'[]');
+  if(!items.length){list.innerHTML='<div class="card empty">No reports yet. Generate your first report from the Generate page.</div>';return}
+  list.innerHTML=items.map((x,i)=>`<div class="card history-item"><div><h3>${escapeHtml(x.title)}</h3><p>${escapeHtml(x.domain)} · ${escapeHtml(x.date)}</p></div><div><span class="badge">Saved</span> <button class="btn secondary" onclick="openHistory(${i})">Open</button></div></div>`).join('');
+}
+function openHistory(i){
+  const items=JSON.parse(localStorage.getItem('reportai_history')||'[]'); const x=items[i];
+  document.getElementById('reportPaper').innerHTML=x.html; document.getElementById('output').classList.add('show'); showView('generate');
+  currentReport={title:x.title,domain:x.domain}; toast('Report opened');
+}
+function clearHistory(){localStorage.removeItem('reportai_history');renderHistory();toast('History cleared')}
+function editReport(){showView('workspace');renderWorkspace()}
+function renderWorkspace(){
+  const nav=document.getElementById('sectionNav'), editor=document.getElementById('editor');
+  const report=document.getElementById('reportPaper').innerText || JSON.parse(localStorage.getItem('reportai_history')||'[]')[0]?.html || '';
+  const names=['Abstract','Introduction','Literature Review','Methodology','Implementation','Results and Discussion','Conclusion and Future Scope','References'];
+  nav.innerHTML=names.map((n,i)=>`<button class="${i===0?'active':''}" onclick="selectSection(${i},this)">${n}</button>`).join('');
+  editor.value=report || 'Generate a report first, then edit it here.';
+}
+function selectSection(i,btn){document.querySelectorAll('#sectionNav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');currentSection=i;toast('Section selected: '+btn.textContent)}
+function saveWorkspace(){
+  const text=document.getElementById('editor').value;
+  const paper=document.getElementById('reportPaper'); paper.innerHTML='<pre style="white-space:pre-wrap;font-family:inherit;line-height:1.7">'+escapeHtml(text)+'</pre>';
+  saveToHistory(); toast('Workspace changes saved');
+}
+function improveText(){const e=document.getElementById('editor');if(!e.value.trim())return;e.value='Improved academic version:\\n\\n'+e.value.replace(/\\s+/g,' ').trim()+ '\\n\\nThe above content can be further customized according to the actual implementation and experimental findings.';toast('Text improved')}
+function summarizeText(){const e=document.getElementById('editor');const words=e.value.split(/\\s+/).filter(Boolean);e.value=words.slice(0,Math.min(100,words.length)).join(' ')+'...';toast('Text summarized')}
+function copyReport(){navigator.clipboard?.writeText(document.getElementById('reportPaper').innerText);toast('Report copied')}
+function copyWorkspace(){navigator.clipboard?.writeText(document.getElementById('editor').value);toast('Workspace copied')}
+</script>
+</body>
+</html>
